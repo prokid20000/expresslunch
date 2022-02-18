@@ -14,8 +14,8 @@ const router = new express.Router();
 router.get("/", async function (req, res, next) {
 
   let customers;
-  debugger;
-  if (!req.query.search){
+
+  if (!req.query.search) {
     customers = await Customer.all();
   } else {
     let name = (req.query.search).toLowerCase();
@@ -40,6 +40,16 @@ router.post("/add/", async function (req, res, next) {
   await customer.save();
 
   return res.redirect(`/${customer.id}/`);
+});
+
+/** Finds top 10 customers based on amount of reservations */
+
+router.get("/top-ten/", async function (req, res, next) {
+  console.log("Starting Top Ten GET");
+  const customers = await Customer.getTopTen();
+
+  res.render("customer_list.html", { customers });
+  console.log("Ending Top Ten GET");
 });
 
 /** Show a customer, given their ID. */
@@ -91,5 +101,7 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
 
   return res.redirect(`/${customerId}/`);
 });
+
+
 
 module.exports = router;

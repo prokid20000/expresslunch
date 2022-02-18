@@ -20,7 +20,7 @@ class Customer {
 
   static async all() {
     const results = await db.query(
-          `SELECT id,
+      `SELECT id,
                   first_name AS "firstName",
                   last_name  AS "lastName",
                   phone,
@@ -35,14 +35,14 @@ class Customer {
 
   static async get(id) {
     const results = await db.query(
-          `SELECT id,
+      `SELECT id,
                   first_name AS "firstName",
                   last_name  AS "lastName",
                   phone,
                   notes
            FROM customers
            WHERE id = $1`,
-        [id],
+      [id],
     );
 
     const customer = results.rows[0];
@@ -56,6 +56,29 @@ class Customer {
     return new Customer(customer);
   }
 
+  /** Gets top ten customers by amount of reservations */
+
+  static async getTopTen() {
+    console.log("Starting DB query");
+    const results = await db.query(
+      `SELECT customers.id,
+            first_name AS "firstName",
+            last_name AS "lastName",
+            phone,
+            customers.notes
+        FROM customers
+        JOIN reservations
+        ON customers.id = reservations.customer_id
+        GROUP BY customers.id
+        ORDER BY count(reservations.id) DESC
+        LIMIT 10`
+    );
+    console.log("Ending DB query");
+    return results.rows.map(c => new Customer(c));
+  }
+
+  /** Searches for customer by first or last name. Not case sensitive. */
+
   static async search(name) {
     const results = await db.query(
       `SELECT id,
@@ -65,7 +88,8 @@ class Customer {
           notes
         FROM customers
         WHERE lower(first_name) = $1 OR lower(last_name) = $1`,
-        [name]
+        //CODE REVIEW Can use like or ilike instead of lower
+      [name]
     );
 
     const customer = results.rows[0];
@@ -90,26 +114,26 @@ class Customer {
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
-            `INSERT INTO customers (first_name, last_name, phone, notes)
+        `INSERT INTO customers (first_name, last_name, phone, notes)
              VALUES ($1, $2, $3, $4)
              RETURNING id`,
-          [this.firstName, this.lastName, this.phone, this.notes],
+        [this.firstName, this.lastName, this.phone, this.notes],
       );
       this.id = result.rows[0].id;
     } else {
       await db.query(
-            `UPDATE customers
+        `UPDATE customers
              SET first_name=$1,
                  last_name=$2,
                  phone=$3,
                  notes=$4
              WHERE id = $5`, [
-            this.firstName,
-            this.lastName,
-            this.phone,
-            this.notes,
-            this.id,
-          ],
+        this.firstName,
+        this.lastName,
+        this.phone,
+        this.notes,
+        this.id,
+      ],
       );
     }
   }
