@@ -18,7 +18,7 @@ router.get("/", async function (req, res, next) {
   if (!req.query.search){
     customers = await Customer.all();
   } else {
-    let name = req.query.search;
+    let name = (req.query.search).toLowerCase();
     customers = await Customer.search(name);
   }
 
