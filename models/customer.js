@@ -16,6 +16,11 @@ class Customer {
     this.notes = notes;
   }
 
+  /** Return full name */
+  get fullName() {
+    return this.firstName + " " + this.lastName;
+  }
+
   /** find all customers. */
 
   static async all() {
@@ -137,10 +142,7 @@ class Customer {
       );
     }
   }
-  /** Return full name */
-  fullName() {
-    return this.firstName + " " + this.lastName;
-  }
+  
 
 }
 
