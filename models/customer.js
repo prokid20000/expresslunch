@@ -56,6 +56,29 @@ class Customer {
     return new Customer(customer);
   }
 
+  static async search(name) {
+    const results = await db.query(
+      `SELECT id,
+          first_name,
+          last_name,
+          phone,
+          notes
+        FROM customers
+        WHERE first_name = $1 OR last_name = $1`,
+        [name]
+    );
+
+    const customer = results.rows[0];
+
+    if (customer === undefined) {
+      const err = new Error(`No customer with name including: ${name}`);
+      err.status = 404;
+      throw err;
+    }
+
+    return results.rows.map(c => new Customer(c));
+  }
+
   /** get all reservations for this customer. */
 
   async getReservations() {
